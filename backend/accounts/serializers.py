@@ -5,7 +5,6 @@ User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = [
@@ -33,8 +32,8 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 
-class UserSerializer(serializers.ModelSerializer):
 
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
@@ -42,4 +41,23 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "is_staff"
+        ]
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ImageField(required=False)
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "is_staff",
+            "profile_image"
+        ]
+
+        read_only_fields = [
+            "id",
+            "email"
         ]
