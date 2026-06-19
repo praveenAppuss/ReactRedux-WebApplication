@@ -44,3 +44,22 @@ export const toggleUserStatus = createAsyncThunk(
     }
   }
 );
+
+export const updateAdminUser = createAsyncThunk(
+  "admin/updateUser",
+  async ({ id, userData }, { rejectWithValue }) => {
+    try {
+      const response = await AxiosInstance.patch(
+        `admin/users/${id}/`,
+        userData
+      );
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data ||
+        "User update failed"
+      );
+    }
+  }
+);

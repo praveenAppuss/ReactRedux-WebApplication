@@ -16,7 +16,7 @@ export default function AppRoutes() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>}/>
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>}/>
-        {/* <Route path="/admin/login" element={<AdminLogin />}/> */}
+        
       </Routes>
     </BrowserRouter>
   );

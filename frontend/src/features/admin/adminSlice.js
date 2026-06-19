@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchAdminUsers, toggleUserStatus } from "./adminThunks";
+import { fetchAdminUsers, toggleUserStatus, updateAdminUser } from "./adminThunks";
 
 const initialState = {
     users: [],
@@ -43,6 +43,19 @@ const adminSlice = createSlice({
                             ...state.users[index],
                             ...action.payload,
                         };
+                    }
+                }
+
+            )
+            .addCase(
+                updateAdminUser.fulfilled,
+                (state, action) => {
+                    const index = state.users.findIndex(
+                        (u) => u.id === action.payload.id
+                    );
+
+                    if (index !== -1) {
+                        state.users[index] = action.payload;
                     }
                 }
             );
