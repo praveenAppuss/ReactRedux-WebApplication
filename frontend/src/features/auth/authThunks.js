@@ -60,6 +60,10 @@ export const loginUser = createAsyncThunk(
         "user",
         JSON.stringify(res.data.user)
       );
+      localStorage.setItem(
+        "is_admin",
+        JSON.stringify(res.data.is_admin)
+      );
 
       return res.data;
     } catch (err) {

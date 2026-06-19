@@ -5,6 +5,7 @@ import Register from "../pages/Register";
 import Home from "../pages/Home";
 import Profile from "../pages/Profile";
 import AdminDashboard from "../pages/AdminDashboard";
+// import AdminLogin from "../pages/AdminLogin";
 
 export default function AppRoutes() {
   return (
@@ -15,7 +16,7 @@ export default function AppRoutes() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>}/>
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>}/>
-        <Route path="/admin" element={<AdminDashboard />}/>
+        {/* <Route path="/admin/login" element={<AdminLogin />}/> */}
       </Routes>
     </BrowserRouter>
   );

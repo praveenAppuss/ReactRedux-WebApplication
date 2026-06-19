@@ -35,10 +35,18 @@ export default function Login() {
   };
 
   useEffect(() => {
-    if (isLoggedIn) {
+  if (isLoggedIn) {
+    const isAdmin = JSON.parse(
+      localStorage.getItem("is_admin")
+    );
+
+    if (isAdmin) {
+      navigate("/admin");
+    } else {
       navigate("/home");
     }
-  }, [isLoggedIn, navigate]);
+  }
+}, [isLoggedIn, navigate]);
 
   return (
     <div className="container mt-5">
