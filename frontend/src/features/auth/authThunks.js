@@ -69,3 +69,20 @@ export const loginUser = createAsyncThunk(
     }
   }
 );
+
+export const fetchProfile = createAsyncThunk(
+  "auth/fetchProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await AxiosInstance.get(
+        "users/profile/"
+      );
+
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch profile"
+      );
+    }
+  }
+);
