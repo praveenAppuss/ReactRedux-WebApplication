@@ -56,12 +56,19 @@ def login(request):
             {"message": "User not found"},
             status=status.HTTP_404_NOT_FOUND
         )
+    
+    if not user.is_active:
+        return Response(
+            {"message": "User account is blocked"},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     if not user.check_password(password):
         return Response(
             {"message": "Invalid credentials"},
             status=status.HTTP_401_UNAUTHORIZED
         )
+    
 
     refresh = RefreshToken.for_user(user)
 
