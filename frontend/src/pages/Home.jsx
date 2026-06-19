@@ -1,3 +1,13 @@
+import Navbar from "../components/Navbar";
+
 export default function Home() {
-  return <h1>Home Page</h1>;
+  return (
+    <>
+      <Navbar />
+
+      <div className="container mt-5">
+        <h1>Welcome Home </h1>
+      </div>
+    </>
+  );
 }
