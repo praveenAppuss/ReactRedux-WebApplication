@@ -76,7 +76,9 @@ def login(request):
         "success": True,
         "user": UserSerializer(user).data,
         "access_token": str(refresh.access_token),
-        "refresh": str(refresh)
+        "refresh": str(refresh),
+        "is_admin": user.is_staff
+
     })
 
 
