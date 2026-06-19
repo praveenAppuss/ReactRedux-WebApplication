@@ -1,37 +1,52 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchAdminUsers } from "./adminThunks";
+import { fetchAdminUsers, toggleUserStatus } from "./adminThunks";
 
 const initialState = {
-  users: [],
-  loading: false,
-  error: null,
+    users: [],
+    loading: false,
+    error: null,
 };
 
 const adminSlice = createSlice({
-  name: "admin",
-  initialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
+    name: "admin",
+    initialState,
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
 
-      .addCase(fetchAdminUsers.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+            .addCase(fetchAdminUsers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
 
-      .addCase(fetchAdminUsers.fulfilled, (state, action) => {
-        state.loading = false;
+            .addCase(fetchAdminUsers.fulfilled, (state, action) => {
+                state.loading = false;
 
-        state.users =
-          action.payload.results ||
-          action.payload;
-      })
+                state.users =
+                    action.payload.results ||
+                    action.payload;
+            })
 
-      .addCase(fetchAdminUsers.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
-  },
+            .addCase(fetchAdminUsers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(
+                toggleUserStatus.fulfilled,
+                (state, action) => {
+                    const index = state.users.findIndex(
+                        (u) => u.id === action.payload.id
+                    );
+
+                    if (index !== -1) {
+                        state.users[index] = {
+                            ...state.users[index],
+                            ...action.payload,
+                        };
+                    }
+                }
+            );
+    },
 });
 
 export default adminSlice.reducer;

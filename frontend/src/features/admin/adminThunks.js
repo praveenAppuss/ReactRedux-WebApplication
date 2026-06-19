@@ -3,18 +3,43 @@ import AxiosInstance from "../../api/AxiosInstance";
 
 export const fetchAdminUsers = createAsyncThunk(
   "admin/fetchUsers",
-  async (_, { rejectWithValue }) => {
+  async (search = "", { rejectWithValue }) => {
     try {
       const response = await AxiosInstance.get(
-        "admin/users/"
+        "admin/users/",
+        {
+          params: search
+            ? { search }
+            : {},
+        }
       );
 
       return response.data;
-
     } catch (error) {
       return rejectWithValue(
         error.response?.data ||
         "Failed to fetch users"
+      );
+    }
+  }
+);
+
+export const toggleUserStatus = createAsyncThunk(
+  "admin/toggleUserStatus",
+  async ({ id, is_active }, { rejectWithValue }) => {
+    try {
+      const response = await AxiosInstance.patch(
+        `admin/users/${id}/`,
+        {
+          is_active: !is_active,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data ||
+        "Failed to update user"
       );
     }
   }
