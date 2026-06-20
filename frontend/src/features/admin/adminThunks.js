@@ -82,3 +82,21 @@ export const createAdminUser = createAsyncThunk(
     }
   }
 );
+
+export const deleteAdminUser = createAsyncThunk(
+  "admin/deleteUser",
+  async (id, { rejectWithValue }) => {
+    try {
+      await AxiosInstance.delete(
+        `admin/users/${id}/`
+      );
+
+      return id;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data ||
+        "Delete failed"
+      );
+    }
+  }
+);

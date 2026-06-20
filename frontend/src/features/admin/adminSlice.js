@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchAdminUsers, toggleUserStatus, updateAdminUser, createAdminUser } from "./adminThunks";
+import { fetchAdminUsers, toggleUserStatus, updateAdminUser, createAdminUser, deleteAdminUser, } from "./adminThunks";
 
 const initialState = {
     users: [],
@@ -63,6 +63,14 @@ const adminSlice = createSlice({
                 createAdminUser.fulfilled,
                 (state, action) => {
                     state.users.unshift(action.payload);
+                }
+            )
+            .addCase(
+                deleteAdminUser.fulfilled,
+                (state, action) => {
+                    state.users = state.users.filter(
+                        (user) => user.id !== action.payload
+                    );
                 }
             );
     },

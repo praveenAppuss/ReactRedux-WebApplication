@@ -4,7 +4,8 @@ import {
   fetchAdminUsers,
   toggleUserStatus,
   updateAdminUser,
-  createAdminUser
+  createAdminUser,
+  deleteAdminUser,
 } from "../features/admin/adminThunks";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../features/auth/authSlice";
@@ -78,6 +79,15 @@ export default function AdminDashboard() {
       dispatch(fetchAdminUsers(search));
     }
   };
+  const handleDelete = (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
+
+    if (confirmDelete) {
+      dispatch(deleteAdminUser(id));
+    }
+  };
 
   if (loading) return <h2>Loading...</h2>;
 
@@ -92,20 +102,17 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mt-5">
+    <div className="container py-4">
 
+      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <div className="d-flex justify-content-between align-items-center">
-          <h2>Admin Dashboard</h2>
-
-          <button
-            className="btn btn-success"
-            onClick={() =>
-              setShowCreateForm(!showCreateForm)
-            }
-          >
-            Add User
-          </button>
+        <div>
+          <h2 className="fw-bold mb-1">
+            User Management Dashboard
+          </h2>
+          <p className="text-muted mb-0">
+            Manage users and permissions
+          </p>
         </div>
 
         <button
@@ -116,187 +123,269 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      <div className="mb-3">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Search by username or email..."
-          value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-        />
+      {/* Stats Cards */}
+      <div className="row mb-4">
+        <div className="col-md-4 mb-3">
+          <div className="card shadow-sm border-0">
+            <div className="card-body text-center">
+              <h6>Total Users</h6>
+              <h2>{users.length}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-4 mb-3">
+          <div className="card shadow-sm border-0">
+            <div className="card-body text-center">
+              <h6>Active Users</h6>
+              <h2>
+                {
+                  users.filter(
+                    (user) => user.is_active
+                  ).length
+                }
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-4 mb-3">
+          <div className="card shadow-sm border-0">
+            <div className="card-body text-center">
+              <h6>Blocked Users</h6>
+              <h2>
+                {
+                  users.filter(
+                    (user) => !user.is_active
+                  ).length
+                }
+              </h2>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <hr />
-      {showCreateForm && (
-        <div className="card p-3 mt-3 mb-3">
-          <h4>Create User</h4>
-
+      {/* Search + Add User */}
+      <div className="row mb-3">
+        <div className="col-md-8 mb-2">
           <input
-            className="form-control mb-2"
-            placeholder="Username"
-            value={newUser.username}
+            type="text"
+            className="form-control"
+            placeholder="Search by username or email..."
+            value={search}
             onChange={(e) =>
-              setNewUser({
-                ...newUser,
-                username: e.target.value,
-              })
+              setSearch(e.target.value)
             }
           />
+        </div>
 
-          <input
-            className="form-control mb-2"
-            placeholder="Email"
-            value={newUser.email}
-            onChange={(e) =>
-              setNewUser({
-                ...newUser,
-                email: e.target.value,
-              })
-            }
-          />
-
-          <input
-            type="password"
-            className="form-control mb-3"
-            placeholder="Password"
-            value={newUser.password}
-            onChange={(e) =>
-              setNewUser({
-                ...newUser,
-                password: e.target.value,
-              })
-            }
-          />
-
+        <div className="col-md-4 text-md-end">
           <button
-            className="btn btn-primary"
-            onClick={handleCreateUser}
+            className="btn btn-success"
+            onClick={() =>
+              setShowCreateForm(!showCreateForm)
+            }
           >
-            Create User
+            + Add User
           </button>
         </div>
-      )}
+      </div>
 
-      <table className="table table-striped table-bordered mt-3">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th width="200">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-
-              <td>{user.username}</td>
-
-              <td>{user.email}</td>
-
-              <td>
-                {user.is_active
-                  ? "Active"
-                  : "Blocked"}
-              </td>
-
-              <td>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => {
-                    setSelectedUser(user);
-
-                    setEditForm({
-                      email: user.email,
-                      is_active: user.is_active,
-                    });
-                  }}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className={
-                    user.is_active
-                      ? "btn btn-danger btn-sm ms-2"
-                      : "btn btn-success btn-sm ms-2"
-                  }
-                  onClick={() =>
-                    dispatch(
-                      toggleUserStatus({
-                        id: user.id,
-                        is_active: user.is_active,
-                      })
-                    )
-                  }
-                >
-                  {user.is_active
-                    ? "Block"
-                    : "Unblock"}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {selectedUser && (
-        <div className="card mt-4 p-3 shadow">
-          <h4>Edit User</h4>
-
-          <div className="mb-3">
-            <label className="form-label">
-              Username
-            </label>
+      {/* Create User Form */}
+      {showCreateForm && (
+        <div className="card shadow-sm border-0 mb-4">
+          <div className="card-body">
+            <h4>Create User</h4>
 
             <input
-              className="form-control"
-              value={selectedUser.username}
-              readOnly
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">
-              Email
-            </label>
-
-            <input
-              className="form-control"
-              value={editForm.email}
+              className="form-control mb-2"
+              placeholder="Username"
+              value={newUser.username}
               onChange={(e) =>
-                setEditForm({
-                  ...editForm,
+                setNewUser({
+                  ...newUser,
+                  username: e.target.value,
+                })
+              }
+            />
+
+            <input
+              className="form-control mb-2"
+              placeholder="Email"
+              value={newUser.email}
+              onChange={(e) =>
+                setNewUser({
+                  ...newUser,
                   email: e.target.value,
                 })
               }
             />
-          </div>
 
-          <div className="form-check mb-3">
             <input
-              type="checkbox"
-              className="form-check-input"
-              checked={editForm.is_active}
+              type="password"
+              className="form-control mb-3"
+              placeholder="Password"
+              value={newUser.password}
               onChange={(e) =>
-                setEditForm({
-                  ...editForm,
-                  is_active: e.target.checked,
+                setNewUser({
+                  ...newUser,
+                  password: e.target.value,
                 })
               }
             />
 
-            <label className="form-check-label">
-              Active User
-            </label>
+            <button
+              className="btn btn-primary"
+              onClick={handleCreateUser}
+            >
+              Create User
+            </button>
           </div>
+        </div>
+      )}
 
-          <div>
+      {/* User Table */}
+      <div className="card shadow-sm border-0">
+        <div className="card-body">
+
+          <table className="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th width="200">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.id}</td>
+
+                  <td>{user.username}</td>
+
+                  <td>{user.email}</td>
+
+                  <td>
+                    {user.is_active ? (
+                      <span className="badge bg-success">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="badge bg-danger">
+                        Blocked
+                      </span>
+                    )}
+                  </td>
+
+                  <td>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        setSelectedUser(user);
+
+                        setEditForm({
+                          email: user.email,
+                          is_active: user.is_active,
+                        });
+                      }}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className={
+                        user.is_active
+                          ? "btn btn-warning btn-sm ms-2"
+                          : "btn btn-success btn-sm ms-2"
+                      }
+                      onClick={() =>
+                        dispatch(
+                          toggleUserStatus({
+                            id: user.id,
+                            is_active: user.is_active,
+                          })
+                        )
+                      }
+                    >
+                      {user.is_active
+                        ? "Block"
+                        : "Unblock"}
+                    </button>
+
+                    <button
+                      className="btn btn-danger btn-sm ms-2"
+                      onClick={() =>
+                        handleDelete(user.id)
+                      }
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+      {/* Edit User */}
+      {selectedUser && (
+        <div className="card mt-4 shadow border-0">
+          <div className="card-body">
+
+            <h4>Edit User</h4>
+
+            <div className="mb-3">
+              <label className="form-label">
+                Username
+              </label>
+
+              <input
+                className="form-control"
+                value={selectedUser.username}
+                readOnly
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">
+                Email
+              </label>
+
+              <input
+                className="form-control"
+                value={editForm.email}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    email: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="form-check mb-3">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={editForm.is_active}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    is_active: e.target.checked,
+                  })
+                }
+              />
+
+              <label className="form-check-label">
+                Active User
+              </label>
+            </div>
+
             <button
               className="btn btn-success me-2"
               onClick={handleSave}
@@ -312,6 +401,7 @@ export default function AdminDashboard() {
             >
               Cancel
             </button>
+
           </div>
         </div>
       )}
