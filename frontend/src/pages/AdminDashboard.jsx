@@ -4,11 +4,20 @@ import {
   fetchAdminUsers,
   toggleUserStatus,
   updateAdminUser,
+  createAdminUser
 } from "../features/admin/adminThunks";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../features/auth/authSlice";
 
 export default function AdminDashboard() {
+  const [showCreateForm, setShowCreateForm] =
+    useState(false);
+
+  const [newUser, setNewUser] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -47,9 +56,27 @@ export default function AdminDashboard() {
       })
     );
 
+
     setSelectedUser(null);
 
     dispatch(fetchAdminUsers(search));
+  };
+  const handleCreateUser = async () => {
+    const result = await dispatch(
+      createAdminUser(newUser)
+    );
+
+    if (!result.error) {
+      setNewUser({
+        username: "",
+        email: "",
+        password: "",
+      });
+
+      setShowCreateForm(false);
+
+      dispatch(fetchAdminUsers(search));
+    }
   };
 
   if (loading) return <h2>Loading...</h2>;
@@ -68,7 +95,18 @@ export default function AdminDashboard() {
     <div className="container mt-5">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Admin Dashboard</h2>
+        <div className="d-flex justify-content-between align-items-center">
+          <h2>Admin Dashboard</h2>
+
+          <button
+            className="btn btn-success"
+            onClick={() =>
+              setShowCreateForm(!showCreateForm)
+            }
+          >
+            Add User
+          </button>
+        </div>
 
         <button
           className="btn btn-danger"
@@ -91,6 +129,55 @@ export default function AdminDashboard() {
       </div>
 
       <hr />
+      {showCreateForm && (
+        <div className="card p-3 mt-3 mb-3">
+          <h4>Create User</h4>
+
+          <input
+            className="form-control mb-2"
+            placeholder="Username"
+            value={newUser.username}
+            onChange={(e) =>
+              setNewUser({
+                ...newUser,
+                username: e.target.value,
+              })
+            }
+          />
+
+          <input
+            className="form-control mb-2"
+            placeholder="Email"
+            value={newUser.email}
+            onChange={(e) =>
+              setNewUser({
+                ...newUser,
+                email: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="password"
+            className="form-control mb-3"
+            placeholder="Password"
+            value={newUser.password}
+            onChange={(e) =>
+              setNewUser({
+                ...newUser,
+                password: e.target.value,
+              })
+            }
+          />
+
+          <button
+            className="btn btn-primary"
+            onClick={handleCreateUser}
+          >
+            Create User
+          </button>
+        </div>
+      )}
 
       <table className="table table-striped table-bordered mt-3">
         <thead>

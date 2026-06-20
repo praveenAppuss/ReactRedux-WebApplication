@@ -63,3 +63,22 @@ export const updateAdminUser = createAsyncThunk(
     }
   }
 );
+
+export const createAdminUser = createAsyncThunk(
+  "admin/createUser",
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await AxiosInstance.post(
+        "admin/users/",
+        userData
+      );
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data ||
+        "User creation failed"
+      );
+    }
+  }
+);
