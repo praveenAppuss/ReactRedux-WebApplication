@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { signupUser } from "../features/auth/authThunks";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading, error, isLoggedIn } = useSelector(
-    (state) => state.auth
-  );
+  const { loading, error, isLoggedIn } =
+    useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -25,24 +25,53 @@ export default function Register() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (
-      formData.password !== formData.confirmPassword
+      !formData.username ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
     ) {
-      alert("Passwords do not match");
+      toast.error("All fields are required");
       return;
     }
 
-    dispatch(
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    const result = await dispatch(
       signupUser({
         username: formData.username,
         email: formData.email,
         password: formData.password,
       })
     );
+
+    if (!result.error) {
+      toast.success(
+        "Registration Successful 🎉"
+      );
+    }
   };
+
+  useEffect(() => {
+    if (error) {
+      if (typeof error === "object") {
+        Object.values(error).forEach((msg) => {
+          toast.error(msg.toString());
+        });
+      } else {
+        toast.error(error);
+      }
+    }
+  }, [error]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -51,14 +80,20 @@ export default function Register() {
   }, [isLoggedIn, navigate]);
 
   return (
-    <div className="container mt-5">
+    <div
+      className="container d-flex justify-content-center align-items-center"
+      style={{ minHeight: "100vh" }}
+    >
       <div
-        className="card p-4 mx-auto"
-        style={{ maxWidth: "400px" }}
+        className="card shadow-lg border-0 p-4"
+        style={{
+          width: "450px",
+          borderRadius: "20px",
+        }}
       >
-        <h2 className="mb-4 text-center">
+        <h1 className="text-center fw-bold mb-4">
           Register
-        </h2>
+        </h1>
 
         <form onSubmit={handleSubmit}>
           <input
@@ -66,6 +101,7 @@ export default function Register() {
             type="text"
             name="username"
             placeholder="Username"
+            value={formData.username}
             onChange={handleChange}
           />
 
@@ -74,6 +110,7 @@ export default function Register() {
             type="email"
             name="email"
             placeholder="Email"
+            value={formData.email}
             onChange={handleChange}
           />
 
@@ -82,18 +119,21 @@ export default function Register() {
             type="password"
             name="password"
             placeholder="Password"
+            value={formData.password}
             onChange={handleChange}
           />
 
           <input
-            className="form-control mb-3"
+            className="form-control mb-4"
             type="password"
             name="confirmPassword"
             placeholder="Confirm Password"
+            value={formData.confirmPassword}
             onChange={handleChange}
           />
 
           <button
+            type="submit"
             className="btn btn-primary w-100"
             disabled={loading}
           >
@@ -103,14 +143,11 @@ export default function Register() {
           </button>
         </form>
 
-        {error && (
-          <p className="text-danger mt-3">
-            {JSON.stringify(error)}
-          </p>
-        )}
-
-        <div className="mt-3 text-center">
-          <Link to="/">
+        <div className="text-center mt-4">
+          <Link
+            to="/"
+            className="text-decoration-none"
+          >
             Already have an account?
           </Link>
         </div>
