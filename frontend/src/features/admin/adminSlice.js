@@ -10,7 +10,11 @@ const initialState = {
 const adminSlice = createSlice({
     name: "admin",
     initialState,
-    reducers: {},
+    reducers: {
+        clearAdminError: (state) => {
+            state.error = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
 
@@ -47,24 +51,12 @@ const adminSlice = createSlice({
                 }
 
             )
-            .addCase(
-                updateAdminUser.fulfilled,
-                (state, action) => {
-                    const index = state.users.findIndex(
-                        (u) => u.id === action.payload.id
-                    );
-
-                    if (index !== -1) {
-                        state.users[index] = action.payload;
-                    }
-                }
-            )
-            .addCase(
-                createAdminUser.fulfilled,
-                (state, action) => {
-                    state.users.unshift(action.payload);
-                }
-            )
+            .addCase(updateAdminUser.rejected, (state, action) => {
+                state.error = action.payload;
+            })
+            .addCase(createAdminUser.rejected, (state, action) => {
+                state.error = action.payload;
+            })
             .addCase(
                 deleteAdminUser.fulfilled,
                 (state, action) => {
@@ -75,5 +67,8 @@ const adminSlice = createSlice({
             );
     },
 });
+export const {
+    clearAdminError
+} = adminSlice.actions;
 
 export default adminSlice.reducer;

@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import UserTable from "../components/admin/UserTable";
+import EditUserModal from "../components/admin/EditUserModal";
+import { toast } from "react-toastify";
+import DeleteConfirmModal from "../components/admin/DeleteConfirmModal";
+import CreateUserModal from "../components/admin/CreateUserModal";
 import {
   fetchAdminUsers,
   toggleUserStatus,
@@ -11,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../features/auth/authSlice";
 
 export default function AdminDashboard() {
+
   const [showCreateForm, setShowCreateForm] =
     useState(false);
 
@@ -19,6 +25,11 @@ export default function AdminDashboard() {
     email: "",
     password: "",
   });
+  const [showDeleteModal, setShowDeleteModal] =
+    useState(false);
+
+  const [userToDelete, setUserToDelete] =
+    useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -38,36 +49,83 @@ export default function AdminDashboard() {
   } = useSelector((state) => state.admin);
 
   useEffect(() => {
-    dispatch(fetchAdminUsers(search));
-  }, [dispatch, search]);
+    dispatch(fetchAdminUsers(""));
+  }, [dispatch]);
+
+
+  useEffect(() => {
+    window.history.pushState(
+      null,
+      "",
+      window.location.href
+    );
+
+    const handleBack = () => {
+      window.history.pushState(
+        null,
+        "",
+        window.location.href
+      );
+    };
+
+    window.addEventListener(
+      "popstate",
+      handleBack
+    );
+
+    return () => {
+      window.removeEventListener(
+        "popstate",
+        handleBack
+      );
+    };
+  }, []);
+
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("is_admin");
 
     dispatch(logout());
+    toast.success("Logged out successfully");
 
-    navigate("/");
+    navigate("/", {
+      replace: true,
+    });
   };
 
   const handleSave = async () => {
-    await dispatch(
+    const result = await dispatch(
       updateAdminUser({
         id: selectedUser.id,
         userData: editForm,
       })
     );
 
+    if (!result.error) {
+      toast.success(
+        "User updated successfully"
+      );
 
-    setSelectedUser(null);
+      setSelectedUser(null);
 
-    dispatch(fetchAdminUsers(search));
+      dispatch(fetchAdminUsers(search));
+    }
   };
+
+
   const handleCreateUser = async () => {
     const result = await dispatch(
       createAdminUser(newUser)
     );
 
     if (!result.error) {
+      toast.success(
+        "User created successfully"
+      );
+
       setNewUser({
         username: "",
         email: "",
@@ -79,27 +137,37 @@ export default function AdminDashboard() {
       dispatch(fetchAdminUsers(search));
     }
   };
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this user?"
+
+  const handleSearch = () => {
+    dispatch(fetchAdminUsers(search));
+  };
+
+  const handleClearSearch = () => {
+    setSearch("");
+    dispatch(fetchAdminUsers(""));
+  };
+
+  const handleDelete = async (id) => {
+    const result = await dispatch(
+      deleteAdminUser(id)
     );
 
-    if (confirmDelete) {
-      dispatch(deleteAdminUser(id));
+    if (!result.error) {
+      toast.success(
+        "User deleted successfully"
+      );
+
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+    } else {
+      toast.error(
+        "Failed to delete user"
+      );
     }
   };
 
   if (loading) return <h2>Loading...</h2>;
 
-  if (error) {
-    return (
-      <h2>
-        {typeof error === "string"
-          ? error
-          : JSON.stringify(error)}
-      </h2>
-    );
-  }
 
   return (
     <div className="container py-4">
@@ -166,245 +234,119 @@ export default function AdminDashboard() {
       </div>
 
       {/* Search + Add User */}
-      <div className="row mb-3">
-        <div className="col-md-8 mb-2">
+      <div className="row mb-3 align-items-center">
+
+        <div className="col-md-6 mb-2">
           <input
             type="text"
             className="form-control"
             placeholder="Search by username or email..."
             value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
         </div>
 
-        <div className="col-md-4 text-md-end">
+        <div className="col-md-3 mb-2">
+          <button
+            className="btn btn-primary me-2"
+            onClick={handleSearch}
+          >
+            Search
+          </button>
+
+          <button
+            className="btn btn-outline-secondary"
+            onClick={handleClearSearch}
+          >
+            Clear
+          </button>
+        </div>
+
+        <div className="col-md-3 text-md-end">
           <button
             className="btn btn-success"
             onClick={() =>
-              setShowCreateForm(!showCreateForm)
+              setShowCreateForm(true)
             }
           >
             + Add User
           </button>
         </div>
+
       </div>
 
-      {/* Create User Form */}
-      {showCreateForm && (
-        <div className="card shadow-sm border-0 mb-4">
-          <div className="card-body">
-            <h4>Create User</h4>
+      <CreateUserModal
+        show={showCreateForm}
+        newUser={newUser}
+        setNewUser={setNewUser}
+        handleCreateUser={handleCreateUser}
+        handleClose={() => {
+          setNewUser({
+            username: "",
+            email: "",
+            password: "",
+          });
+          setShowCreateForm(false)
 
-            <input
-              className="form-control mb-2"
-              placeholder="Username"
-              value={newUser.username}
-              onChange={(e) =>
-                setNewUser({
-                  ...newUser,
-                  username: e.target.value,
-                })
-              }
-            />
-
-            <input
-              className="form-control mb-2"
-              placeholder="Email"
-              value={newUser.email}
-              onChange={(e) =>
-                setNewUser({
-                  ...newUser,
-                  email: e.target.value,
-                })
-              }
-            />
-
-            <input
-              type="password"
-              className="form-control mb-3"
-              placeholder="Password"
-              value={newUser.password}
-              onChange={(e) =>
-                setNewUser({
-                  ...newUser,
-                  password: e.target.value,
-                })
-              }
-            />
-
-            <button
-              className="btn btn-primary"
-              onClick={handleCreateUser}
-            >
-              Create User
-            </button>
-          </div>
-        </div>
-      )}
+        }}
+      />
 
       {/* User Table */}
       <div className="card shadow-sm border-0">
         <div className="card-body">
 
-          <table className="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th width="200">Actions</th>
-              </tr>
-            </thead>
+          <UserTable
+            users={users}
+            onEdit={(user) => {
+              setSelectedUser(user);
 
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.id}</td>
-
-                  <td>{user.username}</td>
-
-                  <td>{user.email}</td>
-
-                  <td>
-                    {user.is_active ? (
-                      <span className="badge bg-success">
-                        Active
-                      </span>
-                    ) : (
-                      <span className="badge bg-danger">
-                        Blocked
-                      </span>
-                    )}
-                  </td>
-
-                  <td>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => {
-                        setSelectedUser(user);
-
-                        setEditForm({
-                          email: user.email,
-                          is_active: user.is_active,
-                        });
-                      }}
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className={
-                        user.is_active
-                          ? "btn btn-warning btn-sm ms-2"
-                          : "btn btn-success btn-sm ms-2"
-                      }
-                      onClick={() =>
-                        dispatch(
-                          toggleUserStatus({
-                            id: user.id,
-                            is_active: user.is_active,
-                          })
-                        )
-                      }
-                    >
-                      {user.is_active
-                        ? "Block"
-                        : "Unblock"}
-                    </button>
-
-                    <button
-                      className="btn btn-danger btn-sm ms-2"
-                      onClick={() =>
-                        handleDelete(user.id)
-                      }
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              setEditForm({
+                username: user.username,
+                email: user.email,
+                is_active: user.is_active,
+              });
+            }}
+            onToggleStatus={(user) =>
+              dispatch(
+                toggleUserStatus({
+                  id: user.id,
+                  is_active: user.is_active,
+                })
+              )
+            }
+            onDelete={(user) => {
+              setUserToDelete(user);
+              setShowDeleteModal(true);
+            }}
+          />
 
         </div>
       </div>
 
-      {/* Edit User */}
-      {selectedUser && (
-        <div className="card mt-4 shadow border-0">
-          <div className="card-body">
+      <EditUserModal
+        selectedUser={selectedUser}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        handleSave={handleSave}
+        handleClose={() =>
+          setSelectedUser(null)
 
-            <h4>Edit User</h4>
-
-            <div className="mb-3">
-              <label className="form-label">
-                Username
-              </label>
-
-              <input
-                className="form-control"
-                value={selectedUser.username}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">
-                Email
-              </label>
-
-              <input
-                className="form-control"
-                value={editForm.email}
-                onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    email: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="form-check mb-3">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                checked={editForm.is_active}
-                onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    is_active: e.target.checked,
-                  })
-                }
-              />
-
-              <label className="form-check-label">
-                Active User
-              </label>
-            </div>
-
-            <button
-              className="btn btn-success me-2"
-              onClick={handleSave}
-            >
-              Save Changes
-            </button>
-
-            <button
-              className="btn btn-secondary"
-              onClick={() =>
-                setSelectedUser(null)
-              }
-            >
-              Cancel
-            </button>
-
-          </div>
-        </div>
-      )}
+        }
+      />
+      <DeleteConfirmModal
+        show={showDeleteModal}
+        user={userToDelete}
+        handleDelete={handleDelete}
+        handleClose={() => {
+          setShowDeleteModal(false);
+          setUserToDelete(null);
+        }}
+      />
     </div>
   );
 }

@@ -45,14 +45,29 @@ export default function Login() {
   };
 
   useEffect(() => {
-    if (error) {
-      if (typeof error === "object") {
-        toast.error(
-          error.message || "Login failed"
-        );
-      } else {
-        toast.error(error);
-      }
+  console.log("Error received:", error);
+}, [error]);
+
+
+  useEffect(() => {
+    if (!error) return;
+
+    if (typeof error === "string") {
+      toast.error(error);
+      return;
+    }
+
+    if (error.message) {
+      toast.error(error.message);
+      return;
+    }
+
+    const firstError = Object.values(error)[0];
+
+    if (Array.isArray(firstError)) {
+      toast.error(firstError[0]);
+    } else {
+      toast.error("Login failed");
     }
   }, [error]);
 

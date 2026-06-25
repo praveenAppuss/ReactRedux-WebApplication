@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Home from "../pages/Home";
 import Profile from "../pages/Profile";
 import AdminDashboard from "../pages/AdminDashboard";
-// import AdminLogin from "../pages/AdminLogin";
+import AdminProtectedRoute from "./AdminProtectedRoute";
+import UserProtectedRoute from "./UserProtectedRoute";
+
 
 export default function AppRoutes() {
   return (
@@ -13,9 +15,9 @@ export default function AppRoutes() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>}/>
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>}/>
+        <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+        <Route path="/home" element={<UserProtectedRoute><Home /></UserProtectedRoute>}/>
+        <Route path="/profile" element={<UserProtectedRoute><Profile /></UserProtectedRoute>}/>
         
       </Routes>
     </BrowserRouter>
