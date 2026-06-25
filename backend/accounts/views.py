@@ -13,6 +13,7 @@ from .serializers import (
     UserSerializer,
     UserProfileSerializer
 )
+from .permissions import IsActiveUser
 
 
 from django.contrib.auth import get_user_model
@@ -84,7 +85,7 @@ def login(request):
 
 class UserProfileView(RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsActiveUser]
     parser_classes = [
         MultiPartParser,
         FormParser
