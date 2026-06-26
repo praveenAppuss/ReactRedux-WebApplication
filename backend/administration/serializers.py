@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 import re
+from accounts.validators import validate_username
 
 User = get_user_model()
 
@@ -31,17 +32,7 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_username(self, value):
-        if not re.match(r"^[a-zA-Z0-9_]+$", value):
-            raise serializers.ValidationError(
-                "Only letters, numbers and underscore allowed."
-            )
-
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError(
-                "Username already exists"
-            )
-
-        return value
+        return validate_username(value)
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -75,18 +66,10 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_username(self, value):
-        if not re.match(r"^[a-zA-Z0-9_]+$", value):
-            raise serializers.ValidationError(
-                "Only letters, numbers and underscore allowed."
-            )
-        user = self.instance
-        if User.objects.exclude(id=user.id).filter(
-            username=value
-        ).exists():
-            raise serializers.ValidationError(
-                "Username already exists"
-            )
-        return value
+        return validate_username(
+            value,
+            instance=self.instance
+        )
 
     def validate_email(self, value):
         user = self.instance

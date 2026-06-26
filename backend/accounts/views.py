@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -88,8 +88,22 @@ class UserProfileView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated,IsActiveUser]
     parser_classes = [
         MultiPartParser,
-        FormParser
+        FormParser,
+        JSONParser,
     ]
 
     def get_object(self):
         return self.request.user
+    
+    def delete(self, request):
+        user = request.user
+
+        if user.profile_image:
+            user.profile_image.delete(save=False)
+            user.profile_image = None
+            user.save()
+
+        return Response(
+            {"message": "Profile image deleted successfully"},
+            status=status.HTTP_200_OK,
+        )

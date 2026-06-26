@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+import re
+from .validators import validate_username
 
 User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = [
@@ -18,13 +21,19 @@ class RegisterSerializer(serializers.ModelSerializer):
             "password": {"write_only": True}
         }
 
+    def validate_username(self, value):
+        return validate_username(value)
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "Email already exists."
+            )
+
+        return value
+
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"]
-        )
-        return user
+        return User.objects.create_user(**validated_data)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -47,6 +56,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     profile_image = serializers.ImageField(required=False)
+
     class Meta:
         model = User
         fields = [
@@ -54,10 +64,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "is_staff",
-            "profile_image"
+            "profile_image",
         ]
 
         read_only_fields = [
             "id",
-            "email"
         ]
+
+    def validate_username(self, value):
+        return validate_username(
+            value,
+            instance=self.instance
+        )
+
+    def validate_email(self, value):
+        user = self.instance
+
+        if User.objects.exclude(id=user.id).filter(email=value).exists():
+            raise serializers.ValidationError(
+                "Email already exists."
+            )
+
+        return value
