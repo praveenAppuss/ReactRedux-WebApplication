@@ -37,6 +37,34 @@
   padding: 10px;
   cursor: pointer;
   font-size: 18px;
+  transition: 0.3s;
+}
+
+.upload-icon:hover {
+  background: #0b5ed7;
+  transform: scale(1.08);
+}
+
+.delete-image-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #dc3545;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.delete-image-btn:hover {
+  background: #bb2d3b;
+  transform: scale(1.08);
 }
 
 .hidden-input {
@@ -61,4 +89,34 @@
 
 .profile-value {
   color: #555;
+}
+
+.profile-input {
+  margin-left: 20px;
+}
+
+.delete-image-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #dc3545;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.delete-image-btn:hover {
+  background: #bb2d3b;
+  transform: scale(1.08);
+}
+
+.upload-icon:hover {
+  transform: scale(1.08);
 }
