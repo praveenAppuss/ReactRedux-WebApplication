@@ -24,10 +24,15 @@ const authSlice = createSlice({
             state.user = null;
             state.accessToken = null;
             state.isLoggedIn = false;
+            state.error = null;
 
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
             localStorage.removeItem("user");
+            localStorage.removeItem("is_admin");
+        },
+        clearError: (state) => {
+            state.error = null;
         },
     },
 
@@ -81,7 +86,7 @@ const authSlice = createSlice({
                     state.error = action.payload;
                 }
             )
-            
+
             .addCase(fetchProfile.pending, (state) => {
                 state.loading = true;
             })
@@ -98,5 +103,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

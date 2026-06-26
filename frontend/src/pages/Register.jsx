@@ -8,7 +8,7 @@ export default function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading, error, isLoggedIn } =
+  const { loading, isLoggedIn } =
     useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
@@ -38,10 +38,7 @@ export default function Register() {
       return;
     }
 
-    if (
-      formData.password !==
-      formData.confirmPassword
-    ) {
+    if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
@@ -55,23 +52,33 @@ export default function Register() {
     );
 
     if (!result.error) {
-      toast.success(
-        "Registration Successful 🎉"
-      );
+      toast.success("Registration Successful ");
+      return;
     }
+
+    const err = result.payload;
+
+    if (typeof err === "string") {
+      toast.error(err);
+      return;
+    }
+
+    if (err?.message) {
+      toast.error(err.message);
+      return;
+    }
+
+    Object.values(err).forEach((msg) => {
+      if (Array.isArray(msg)) {
+        toast.error(msg[0]);
+      } else {
+        toast.error(msg);
+      }
+    });
   };
 
-  useEffect(() => {
-    if (error) {
-      if (typeof error === "object") {
-        Object.values(error).forEach((msg) => {
-          toast.error(msg.toString());
-        });
-      } else {
-        toast.error(error);
-      }
-    }
-  }, [error]);
+
+
 
   useEffect(() => {
     if (isLoggedIn) {

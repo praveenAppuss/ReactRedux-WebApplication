@@ -23,10 +23,14 @@ AxiosInstance.interceptors.response.use(
   (error) => {
     const data = error.response?.data;
 
-    // Logout only when JWT token is invalid/expired
-    if (data?.code === "token_not_valid") {
+    if (
+      data?.code === "token_not_valid" ||
+      data?.code === "user_inactive" ||
+      data?.code === "user_not_found"
+    ) {
       localStorage.clear();
-      window.location.href = "/";
+
+      window.location.replace("/");
     }
 
     return Promise.reject(error);

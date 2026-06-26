@@ -100,9 +100,14 @@ export default function Profile() {
     }
   };
 
-  if (loading) return <h2>Loading...</h2>;
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
 
-  if (error) return <h2>{JSON.stringify(error)}</h2>;
+  if (!profile) {
+    return null;
+  }
+
 
   return (
     <>

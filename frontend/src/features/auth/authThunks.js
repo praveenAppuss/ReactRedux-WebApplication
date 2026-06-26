@@ -78,14 +78,22 @@ export const fetchProfile = createAsyncThunk(
   "auth/fetchProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await AxiosInstance.get(
-        "users/profile/"
-      );
-
+      const res = await AxiosInstance.get("users/profile/");
       return res.data;
     } catch (error) {
+      const data = error.response?.data;
+
+      if (
+        data?.code === "user_inactive" ||
+        data?.code === "user_not_found"
+      ) {
+        localStorage.clear();
+        window.location.href = "/";
+        return;
+      }
+
       return rejectWithValue(
-        error.response?.data || "Failed to fetch profile"
+        data || "Failed to fetch profile"
       );
     }
   }

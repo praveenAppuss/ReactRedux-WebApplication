@@ -3,12 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/auth/authThunks";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { clearError } from "../features/auth/authSlice";
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading, error, isLoggedIn } = useSelector(
+  const { loading, isLoggedIn } = useSelector(
     (state) => state.auth
   );
 
@@ -25,51 +26,50 @@ export default function Login() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      toast.error("Please fill all fields");
-      return;
-    }
+  if (!formData.email || !formData.password) {
+    toast.error("Please fill all fields");
+    return;
+  }
 
-    const result = await dispatch(
-      loginUser({
-        email: formData.email,
-        password: formData.password,
-      })
-    );
+  const result = await dispatch(
+    loginUser({
+      email: formData.email,
+      password: formData.password,
+    })
+  );
 
-    if (!result.error) {
-      toast.success("Login Successful");
-    }
-  };
+  if (!result.error) {
+    toast.success("Login Successful");
+    return;
+  }
 
-  useEffect(() => {
-  console.log("Error received:", error);
-}, [error]);
+  const err = result.payload;
 
+  if (typeof err === "string") {
+    toast.error(err);
+  } else if (err?.message) {
+    toast.error(err.message);
+  } else {
+    const first = Object.values(err)[0];
 
-  useEffect(() => {
-    if (!error) return;
-
-    if (typeof error === "string") {
-      toast.error(error);
-      return;
-    }
-
-    if (error.message) {
-      toast.error(error.message);
-      return;
-    }
-
-    const firstError = Object.values(error)[0];
-
-    if (Array.isArray(firstError)) {
-      toast.error(firstError[0]);
+    if (Array.isArray(first)) {
+      toast.error(first[0]);
     } else {
       toast.error("Login failed");
     }
-  }, [error]);
+  }
+};
+
+  
+
+
+  
+
+  useEffect(() => {
+    dispatch(clearError());
+}, [dispatch]);
 
   useEffect(() => {
     if (isLoggedIn) {
